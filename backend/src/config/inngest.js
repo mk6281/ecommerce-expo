@@ -1,45 +1,52 @@
-import express from 'express';
-import path from "path";
-import { connectDB } from "./config/db.js";
-import { clerkMiddleware } from '@clerk/express'
-import { serve } from "inngest/express";
-// import cors from "cors";
+import { Inngest } from "inngest";
+import { connectDB } from "./db.js";
+import { User } from "../models/user.model.js";
 
-import { functions, inngest } from "./config/inngest.js";
+export const inngest = new Inngest({ id: "ecommerce-app" });
 
+const syncUser = inngest.createFunction(
+{
+id: "sync-user",
+triggers: [{ event: "clerk/user.created" }],
+},
+async ({ event }) => {
+await connectDB();
 
-import { ENV } from "./config/env.js";
-
-
-
-const __dirname = path.resolve();
-
-const app = express(); 
-app.use(express.json());
-app.use(clerkMiddleware());
  
-app.get('/api/health', (req, res) => {
-    res.status(200).json({ message: 'Server is running!' });
-});
+const { id, email_addresses, first_name, last_name, image_url } = event.data;
 
-
-app.use("/api/inngest", serve({ client: inngest, functions }));
-
-// make our app ready for deployment
-if (ENV.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../admin/dist")));
-
-  app.get("/{*any}", (req, res) => {
-    res.sendFile(path.join(__dirname, "../admin", "dist", "index.html"));
-  });
-}
-
-
-const startServer = async () => {
-  await connectDB();
-  app.listen(ENV.PORT, () => {
-    console.log("Server is up and running");
-  });
+const newUser = {
+  clerkId: id,
+  email: email_addresses[0]?.email_address,
+  name: ((first_name || "") + " " + (last_name || "")).trim() || "User",
+  imageUrl: image_url,
+  addresses: [],
+  wishlist: [],
 };
 
-startServer();
+await User.create(newUser);
+console.log("✅ User synced");
+
+
+}
+);
+
+const deleteUserFromDB = inngest.createFunction(
+{
+id: "delete-user-from-db",
+triggers: [{ event: "clerk/user.deleted" }],
+},
+async ({ event }) => {
+await connectDB();
+
+ 
+const { id } = event.data;
+await User.deleteOne({ clerkId: id });
+
+console.log("🗑️ User deleted");
+ 
+
+}
+);
+
+export const functions = [syncUser, deleteUserFromDB];
