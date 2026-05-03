@@ -19,6 +19,7 @@
     "dotenv": "^17.2.3",
     "e-comm-app": "file:..",
     "express": "^5.1.0",
+    "inngest": "^4.2.6",
     "lucide-react": "^0.554.0",
     "mongoose": "^8.19.3",
     "react": "^19.2.0",
