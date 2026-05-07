@@ -50,3 +50,4 @@ console.log("🗑️ User deleted");
 );
 
 export const functions = [syncUser, deleteUserFromDB];
+ 
