@@ -3,10 +3,10 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 
-// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ClerkProvider } from "@clerk/clerk-react";
-// import { BrowserRouter } from "react-router";
+import { BrowserRouter } from "react-router";
 // import * as Sentry from "@sentry/react";
 
 // Import your Publishable Key
@@ -16,7 +16,7 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key");
 }
 
-// const queryClient = new QueryClient();
+const queryClient = new QueryClient();
 
 // Sentry.init({
 //   dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -33,12 +33,12 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <BrowserRouter> */}
+    <BrowserRouter>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        {/* <QueryClientProvider client={queryClient}> */}
+        <QueryClientProvider client={queryClient}>
           <App />
-        {/* </QueryClientProvider> */}
+        </QueryClientProvider>
       </ClerkProvider>
-    {/* </BrowserRouter> */}
+    </BrowserRouter>
   </StrictMode>
 );
